@@ -146,9 +146,7 @@ www.ggwp.kr@gmail.com
     }
   </style>
 </head>
-
 <body class="text-center">
-
   <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
     <header class="masthead mb-auto">
       <div class="inner">
@@ -160,33 +158,49 @@ www.ggwp.kr@gmail.com
         </nav>
       </div>
     </header>
-
     <main role="main" class="inner cover">
       <div class="alert alert-dark" role="alert">서버 문제로 인해 서비스가 원활하지 않습니다.</div>
-      <h1 class="cover-heading">중계 현황</h1>
+      <h1 class="cover-heading">자동매매 봇 중계 현황</h1>
       <p class="lead">통신상 약간의 지연이 있습니다.</p>
+      <table class="table">
+        <thead>
+            <tr>
+                <th class="text-primary align-middle" scope="col">101QC(코스피 200선물 12월)</th>
+                <th class="text-primary align-middle" scope="col">106QC(코스닥 150선물 12월)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span id="F101" class="align-middle">77777</span></td>
+                <td><span id="F106" class="align-middle">77777</span></td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr>
+                <th class="text-primary align-middle" scope="col">(229200)KODEX 코스닥 150</th>
+                <th class="text-primary align-middle" scope="col">(251340)KODEX 코스닥150선물인버스</th>
+            </tr>
+        </thead>
+            <tr>
+              <td><span id="A229200" class="align-middle">77777</span></td>
+              <td><span id="A251340" class="align-middle">77777</span></td>
+          </tr>
+        </tbody>
+    </table>
       <div id="chatArea" style="margin: 0 auto;">
         <div style="margin: 0 auto;" id="chatMessageArea"></div>
     </div>
-      <!-- <p class="lead">
-          <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-        </p> -->
-      <!-- <form id="urlForm" method="post" action="/">
-        <input type="text" id="url" name="url" placeholder="http://" value="http://">
-        <button type="submit" class="send">Warding</button>
-      </form> -->
       <div class="ward-url">
-        <!--<p class="lead"><a href="https://www.ggwp.kr/">https://www.ggwp.kr/</a></p>-->
       </div>
     </main>
 
     <footer class="mastfoot mt-auto">
       <div class="inner">
         <p class="m-0 text-center text-white">
-          <a class="btn btn-github btn-outline-light" href="https://github.com/ggwp-kr/ggwp-kr.github.io"><i
+          <a class="btn btn-github btn-outline-light" href="https://github.com/herogate92/232.kr"><i
               class="fab fa-github fa-1x" aria-hidden="true"></i></a>
         </p>
-        <p>www.ggwp.kr@gmail.com</p>
+        <p>herogate92@gmail.com</p>
       </div>
     </footer>
   </div>
@@ -200,8 +214,10 @@ www.ggwp.kr@gmail.com
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
     crossorigin="anonymous"></script>
     <script type="text/javascript">
-        var wsocket;
-        connect();
+      const code_arr = ["101QC","106QC","251340", "229200"];
+      const codeId_arr = ["F101","F106","A251340", "A229200"];
+      var wsocket;
+      connect();
 
         function connect() {
             wsocket = new WebSocket(
@@ -228,7 +244,7 @@ www.ggwp.kr@gmail.com
             }
             else if(adnum == 2)
             {
-                appendMessage("[광고] <a href='https://blog.ggwp.kr/chat/room-ws.jsp'> 랜덤채팅 바로가기</a>");
+                appendMessage("[광고] <a href='https://kbs92.github.io'> 랜덤채팅 바로가기</a>");
             }
 
      		appendMessage("중계서버와 연결되었습니다.");
@@ -236,9 +252,49 @@ www.ggwp.kr@gmail.com
         function onMessage(evt) {
             var data = evt.data;
                 console.log(evt);
-    // 		if (data.substring(0, 4) == "msg:") {
-    // 			appendMessage(data.substring(4));
-                appendMessage(data);
+                if(data=="1"){return;}
+                
+                if(data.indexOf("^")>0)
+                {
+                  console.log();
+                  const scdata = data.split("^");
+                  var code = scdata[0];
+                  var price = scdata[1];
+                  var cpprice = scdata[2];
+
+                  const foundCode = code_arr.findIndex(cd => cd == code)
+                  console.log(foundCode);
+                  const targetEl = document.getElementById(codeId_arr[foundCode]);
+                  console.log(targetEl);
+                  targetEl.classList.toggle("bg-black");
+                  if(Number(cpprice)>0)
+                  {
+                    price = "+"+price;
+                    targetEl.classList.add("text-danger");
+                  }
+                  else if(Number(cpprice) < 0 )
+                  {
+                    price = "-"+price;
+                    targetEl.classList.add("text-primary");
+                  }
+                  else if(Number(cpprice) == 0 )
+                  {
+                    targetEl.classList.add("text-secondary");
+                  }
+                  targetEl.innerHTML = price;
+                  targetEl.classList.toggle("bg-light");
+
+                  //appendMessage(data);
+                  
+
+                }
+                else
+                {
+                  appendMessage(data);
+                }
+                //document.getElementById('testqq');
+                //codeId_arr[foundCode];
+                
     // 		}
         }
         function onClose(evt) {
@@ -255,7 +311,6 @@ www.ggwp.kr@gmail.com
         }
     
         function appendMessage(msg) {
-            if(msg=="1"){return;}
             $("#chatMessageArea").append(msg+"<br>");
             var chatAreaHeight = $("#chatArea").height();
             var maxScroll = $("#chatMessageArea").height() - chatAreaHeight;
