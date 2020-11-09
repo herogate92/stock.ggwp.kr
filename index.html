@@ -9,8 +9,8 @@
 |________/ \______/ |________/|__/|__/  \__/|__/                                                                                                                     \|__|\|__|                                                                                                                                       
 www.ggwp.kr@gmail.com                                                                                                         
 -->
+<!DOCTYPE html>
 <html lang="kr">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -146,6 +146,7 @@ www.ggwp.kr@gmail.com
     }
   </style>
 </head>
+
 <body class="text-center">
   <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
     <header class="masthead mb-auto">
@@ -162,34 +163,36 @@ www.ggwp.kr@gmail.com
       <div class="alert alert-dark" role="alert">서버 문제로 인해 서비스가 원활하지 않습니다.</div>
       <h1 class="cover-heading">자동매매 봇 중계 현황</h1>
       <p class="lead">통신상 약간의 지연이 있습니다.</p>
+      <button id="soundAlert"type="button" class="btn btn-dark" onclick="soundAlertBtn()">
+        <i id="toggleAlert" class="far fa-bell-slash"></i>소리 알람</button>
       <table class="table">
         <thead>
-            <tr>
-                <th class="text-primary align-middle" scope="col">101QC(코스피 200선물 12월)</th>
-                <th class="text-primary align-middle" scope="col">106QC(코스닥 150선물 12월)</th>
-            </tr>
+          <tr>
+            <th class="text-primary align-middle" scope="col">101QC(코스피 200선물 12월)</th>
+            <th class="text-primary align-middle" scope="col">106QC(코스닥 150선물 12월)</th>
+          </tr>
         </thead>
         <tbody>
-            <tr>
-                <td><span id="F101" class="align-middle">77777</span></td>
-                <td><span id="F106" class="align-middle">77777</span></td>
-            </tr>
-        </tbody>
-        <thead>
-            <tr>
-                <th class="text-primary align-middle" scope="col">(229200)KODEX 코스닥 150</th>
-                <th class="text-primary align-middle" scope="col">(251340)KODEX 코스닥150선물인버스</th>
-            </tr>
-        </thead>
-            <tr>
-              <td><span id="A229200" class="align-middle">77777</span></td>
-              <td><span id="A251340" class="align-middle">77777</span></td>
+          <tr>
+            <td><span id="F101" class="align-middle">77777</span></td>
+            <td><span id="F106" class="align-middle">77777</span></td>
           </tr>
         </tbody>
-    </table>
+        <thead>
+          <tr>
+            <th class="text-primary align-middle" scope="col">(229200)KODEX 코스닥 150</th>
+            <th class="text-primary align-middle" scope="col">(251340)KODEX 코스닥150선물인버스</th>
+          </tr>
+        </thead>
+        <tr>
+          <td><span id="A229200" class="align-middle">77777</span></td>
+          <td><span id="A251340" class="align-middle">77777</span></td>
+        </tr>
+        </tbody>
+      </table>
       <div id="chatArea" style="margin: 0 auto;">
         <div style="margin: 0 auto;" id="chatMessageArea"></div>
-    </div>
+      </div>
       <div class="ward-url">
       </div>
     </main>
@@ -213,131 +216,161 @@ www.ggwp.kr@gmail.com
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
     crossorigin="anonymous"></script>
-    <script type="text/javascript">
-      const code_arr = ["101QC","106QC","251340", "229200"];
-      const codeId_arr = ["F101","F106","A251340", "A229200"];
-      var wsocket;
-      connect();
+  <script type="text/javascript">
+    const code_arr = ["101QC", "106QC", "251340", "229200"];
+    const codeId_arr = ["F101", "F106", "A251340", "A229200"];
+    var soundState = false;
+    var audiof;
+    var wsocket;
+    connect();
 
-        function connect() {
-            wsocket = new WebSocket(
-                    "wss://chat.ggwp.kr/chat/chat-ws");
-            wsocket.onopen = onOpen;
-            wsocket.onmessage = onMessage;
-            wsocket.onclose = onClose;
-        }
-        function disconnect() {
-            wsocket.close();
-        }
-        function onOpen(evt) {
-            console.log("connection");
-            // $('#enterBtn').prop("disabled", true);
-            // $('#sendBtn').prop("disabled", false);
-            var adnum = Math.floor(Math.random() * 3);
-            if(adnum == 0)
-            {
-                appendMessage("[광고] <a href='https://ward.ggwp.kr'> 단축URL 와드하러 바로가기</a>");
-            }
-            else if(adnum == 1)
-            {
-                appendMessage("[광고] <a href='https://ggwp.kr'> TwitchTV(트위치티비) 인기 클립 보러가기</a>");
-            }
-            else if(adnum == 2)
-            {
-                appendMessage("[광고] <a href='https://kbs92.github.io'> 랜덤채팅 바로가기</a>");
-            }
-
-     		appendMessage("중계서버와 연결되었습니다.");
-        }
-        function onMessage(evt) {
-            var data = evt.data;
-                console.log(evt);
-                if(data=="1"){return;}
-                
-                if(data.indexOf("^")>0)
-                {
-                  console.log();
-                  const scdata = data.split("^");
-                  var code = scdata[0];
-                  var price = scdata[1];
-                  var cpprice = scdata[2];
-
-                  const foundCode = code_arr.findIndex(cd => cd == code)
-                  console.log(foundCode);
-                  const targetEl = document.getElementById(codeId_arr[foundCode]);
-                  console.log(targetEl);
-                  targetEl.classList.toggle("bg-black");
-                  if(Number(cpprice)>0)
-                  {
-                    price = "+"+price;
-                    targetEl.classList.add("text-danger");
-                  }
-                  else if(Number(cpprice) < 0 )
-                  {
-                    price = "-"+price;
-                    targetEl.classList.add("text-primary");
-                  }
-                  else if(Number(cpprice) == 0 )
-                  {
-                    targetEl.classList.add("text-secondary");
-                  }
-                  targetEl.innerHTML = price;
-                  targetEl.classList.toggle("bg-light");
-
-                  //appendMessage(data);
-                  
-
-                }
-                else
-                {
-                  appendMessage(data);
-                }
-                //document.getElementById('testqq');
-                //codeId_arr[foundCode];
-                
-    // 		}
-        }
-        function onClose(evt) {
-            console.log("disconnection");
-            appendMessage("연결이 끊어졌습니다.");
-            // $('#enterBtn').prop("disabled", false);
-            // $('#sendBtn').prop("disabled", true);
-        }
-        
-        function send() {
-            // var msg = $("#message").val();
-            // wsocket.send("["+nickname + "] " + msg);
-            // $("#message").val("");
-        }
-    
-        function appendMessage(msg) {
-            $("#chatMessageArea").append(msg+"<br>");
-            var chatAreaHeight = $("#chatArea").height();
-            var maxScroll = $("#chatMessageArea").height() - chatAreaHeight;
-            $("#chatArea").scrollTop(maxScroll);
-        }
-    
-        function alivesignal(){
-            wsocket.send("1");
-            console.log("alive_signal");
-        }
-
-        $(document).ready(function() {
-            //$('#sendBtn').click(function() { send(); });
-            //$('#enterBtn').click(function() { connect(); });
-            //$('#exitBtn').click(function() { disconnect(); });
-            setInterval(function(){alivesignal();}, 20000);
-        });
-        
-    </script>
-    <style>
-    #chatArea {
-        width: 600px;
-        height: 480px;
-        overflow-y: auto;
-        border: 1px solid black;
+    function connect() {
+      wsocket = new WebSocket(
+        "wss://chat.ggwp.kr/chat/chat-ws");
+      wsocket.onopen = onOpen;
+      wsocket.onmessage = onMessage;
+      wsocket.onclose = onClose;
     }
-    </style>
+    function disconnect() {
+      wsocket.close();
+    }
+    function onOpen(evt) {
+      console.log("connection");
+      // $('#enterBtn').prop("disabled", true);
+      // $('#sendBtn').prop("disabled", false);
+      var adnum = Math.floor(Math.random() * 3);
+      if (adnum == 0) {
+        appendMessage("[광고] <a href='https://ward.ggwp.kr'> 단축URL 와드하러 바로가기</a>");
+      }
+      else if (adnum == 1) {
+        appendMessage("[광고] <a href='https://ggwp.kr'> TwitchTV(트위치티비) 인기 클립 보러가기</a>");
+      }
+      else if (adnum == 2) {
+        appendMessage("[광고] <a href='https://kbs92.github.io'> 랜덤채팅 바로가기</a>");
+      }
+
+      appendMessage("중계서버와 연결되었습니다.");
+    }
+    function onMessage(evt) {
+      var data = evt.data;
+      console.log(evt);
+      if (data == "1") { return; }
+
+      if (data.indexOf("^") > 0) {
+        console.log();
+        const scdata = data.split("^");
+        var code = scdata[0];
+        var price = scdata[1];
+        var cpprice = scdata[2];
+
+        const foundCode = code_arr.findIndex(cd => cd == code)
+        console.log(foundCode);
+        const targetEl = document.getElementById(codeId_arr[foundCode]);
+        console.log(targetEl);
+        targetEl.classList.toggle("bg-black");
+        if (Number(cpprice) > 0) {
+          price = "+" + price;
+          targetEl.classList.add("text-danger");
+        }
+        else if (Number(cpprice) < 0) {
+          price = "-" + price;
+          targetEl.classList.add("text-primary");
+        }
+        else if (Number(cpprice) == 0) {
+          targetEl.classList.add("text-secondary");
+        }
+        targetEl.innerHTML = price;
+        targetEl.classList.toggle("bg-light");
+
+        //appendMessage(data);
+      }
+      else if (data.indexOf("[주문알림]")) {
+        playAlertSound(data);
+        appendMessage(data);
+      }
+      else {
+        appendMessage(data);
+      }
+      //document.getElementById('testqq');
+      //codeId_arr[foundCode];
+
+      // 		}
+    }
+    function onClose(evt) {
+      console.log("disconnection");
+      appendMessage("연결이 끊어졌습니다.");
+      // $('#enterBtn').prop("disabled", false);
+      // $('#sendBtn').prop("disabled", true);
+    }
+
+    function send() {
+      // var msg = $("#message").val();
+      // wsocket.send("["+nickname + "] " + msg);
+      // $("#message").val("");
+    }
+
+    function appendMessage(msg) {
+      $("#chatMessageArea").append(msg + "<br>");
+      var chatAreaHeight = $("#chatArea").height();
+      var maxScroll = $("#chatMessageArea").height() - chatAreaHeight;
+      $("#chatArea").scrollTop(maxScroll);
+    }
+
+    function  soundAlertBtn(){
+      // <button id="soundAlert" onclick="soundAlertBtn()">
+      //   <i class="far fa-bell"></i>알람 켜기</button>
+      if(soundState)
+      {soundState = false}
+      else{soundState = true}
+      const targetEl = document.getElementById("toggleAlert");
+      targetEl.classList.toggle("fa-bell");
+      targetEl.classList.toggle("fa-bell-slash");
+      console.log(soundState);
+    }
+
+    function playAlertSound(data) {
+      if (soundState) 
+      {
+        var url = "https://232.kr/sound/";
+        var audiof  = new Audio(url+"Beep_Short.mp3");;
+        audiof.play();
+        if (data.indexOf("매수주문확인") > 0) {
+          audiof = new Audio(url+"s211.mp3");
+        }
+        else if (data.indexOf("매수체결확인") > 0) {
+          audiof = new Audio(url+"s213.mp3");
+        }
+        else if (data.indexOf("매도주문확인") > 0) {
+          audiof = new Audio(url+"/111.mp3");
+        }
+        else if (data.indexOf("매도체결확인") > 0) {
+          audiof = new Audio(url+"s113.mp3");
+        }
+        audiof.play();
+      }
+    }
+
+    function alivesignal() {
+      wsocket.send("1");
+      console.log("alive_signal");
+    }
+
+    $(document).ready(function () {
+      //$('#sendBtn').click(function() { send(); });
+      //$('#enterBtn').click(function() { connect(); });
+      //$('#exitBtn').click(function() { disconnect(); });
+      setInterval(function () { alivesignal(); }, 20000);
+    });
+
+  </script>
+  <style>
+    #chatArea {
+      width: 600px;
+      height: 480px;
+      overflow-y: auto;
+      border: 1px solid black;
+    }
+  </style>
 </body>
 
 </html>
