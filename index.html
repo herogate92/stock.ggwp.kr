@@ -7,10 +7,11 @@
 | $$       /$$  \ $$| $$          | $$_  $$ | $$      
 | $$$$$$$$|  $$$$$$/| $$$$$$$$ /$$| $$ \  $$| $$      
 |________/ \______/ |________/|__/|__/  \__/|__/                                                                                                                     \|__|\|__|                                                                                                                                       
-www.ggwp.kr@gmail.com                                                                                                         
--->
+www.ggwp.kr@gmail.com                                                                                                          
+!-->
 <!DOCTYPE html>
 <html lang="kr">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -163,7 +164,7 @@ www.ggwp.kr@gmail.com
       <div class="alert alert-dark" role="alert">서버 문제로 인해 서비스가 원활하지 않습니다.</div>
       <h1 class="cover-heading">자동매매 봇 중계 현황</h1>
       <p class="lead">통신상 약간의 지연이 있습니다.</p>
-      <button id="soundAlert"type="button" class="btn btn-dark" onclick="soundAlertBtn()">
+      <button id="soundAlert" type="button" class="btn btn-dark" onclick="soundAlertBtn()">
         <i id="toggleAlert" class="far fa-bell-slash"></i>소리 알람</button>
       <table class="table">
         <thead>
@@ -190,6 +191,185 @@ www.ggwp.kr@gmail.com
         </tr>
         </tbody>
       </table>
+      <div id="lightweight-charts-area">
+        <!-- lightweight-charts start -->
+        <script type="text/javascript"
+          src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+        <script>
+          var chart = LightweightCharts.createChart(document.getElementById("lightweight-charts-area"), {
+            width: 600,
+            height: 300,
+            crosshair: {
+              mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            priceFormat: {
+              type: 'custom',
+              minMove: 0.02,
+              formatter: function (price) {
+                return '$' + price.toFixed(2);
+              }
+            },
+            layout: {
+              backgroundColor: "#131722",
+              textColor: "#d1d4dc"
+            },
+            grid: {
+              vertLines: {
+                color: "rgba(42, 46, 57, 0)"
+              },
+              horzLines: {
+                color: "rgba(42, 46, 57, 0.6)"
+              }
+            }
+          });
+          chart.applyOptions({
+            timeScale: {
+              rightOffset: 6,
+              barSpacing: 24,
+              fixLeftEdge: true,
+              lockVisibleTimeRangeOnResize: true,
+              rightBarStaysOnScroll: true,
+              borderVisible: true,
+              borderColor: '#000000',
+              visible: true,
+              timeVisible: true,
+              secondsVisible: true,
+              tickMarkFormatter: (time, tickMarkType, locale) => {
+                console.log(time, tickMarkType, locale);
+                //const year = LightweightCharts.isBusinessDay(time) ? time.year : new Date(time * 1000).getMinutes();
+                const mins = new Date(time * 1000).getMinutes();
+                return String(mins);
+              },
+            },
+          });
+          chart.timeScale().scrollToRealTime();
+          // ORANGE RED #FF4500  // RoyalBlue #4169E1
+          var candleSeries = chart.addCandlestickSeries({
+            upColor: '#FF4500',
+            downColor: '#4169E1',
+            borderVisible: false,
+            //wickVisible: true,
+            borderColor: '#000000',
+            //wickColor: '#000000',
+            borderUpColor: '#FF4500',
+            borderDownColor: '#4169E1',
+            wickUpColor: '#FF4500',
+            wickDownColor: '#4169E1',
+            upColor: '#FF4500',
+            downColor: '#4169E1',
+            borderDownColor: '#4169E1',
+            borderUpColor: '#FF4500',
+            wickDownColor: '#4169E1',
+            wichUpColor: '#FF4500',
+          });
+          var nowtime = Math.trunc(new Date().setSeconds(0) / 1000);
+          console.log(new Date().setSeconds(0));
+          console.log(new Date());
+          var data = [
+            { time: nowtime, open: 0, high: 0, low: 0, close: 0 },
+          ];
+
+          candleSeries.setData(data);
+
+          var lastClose = data[data.length - 1].close;
+          var lastIndex = data.length - 1;
+
+          var targetIndex = lastIndex + 105 + Math.round(Math.random() + 30);
+          var targetPrice = getRandomPrice();
+
+          var currentIndex = lastIndex + 1;
+          var currentBusinessDay = Math.trunc(new Date().setSeconds(0) / 1000);
+          var ticksInCurrentBar = 0;
+          var currentBar = {
+            open: null,
+            high: null,
+            low: null,
+            close: null,
+            time: Math.trunc(new Date().setSeconds(0) / 1000),
+          };
+
+          function mergeTickToBar(price) {
+            if (currentBar.open === null) {
+              currentBar.open = price;
+              currentBar.high = price;
+              currentBar.low = price;
+              currentBar.close = price;
+            } else {
+              currentBar.close = price;
+              currentBar.high = Math.max(currentBar.high, price);
+              currentBar.low = Math.min(currentBar.low, price);
+            }
+            candleSeries.update(currentBar);
+          }
+
+          function reset() {
+            candleSeries.setData(data);
+            lastClose = data[data.length - 1].close;
+            lastIndex = data.length - 1;
+
+            targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
+            targetPrice = getRandomPrice();
+
+            currentIndex = lastIndex + 1;
+            currentBusinessDay = { day: 29, month: 5, year: 2019 };
+            ticksInCurrentBar = 0;
+          }
+
+          function getRandomPrice() {
+            return 10 + Math.round(Math.random() * 10000) / 100;
+          }
+
+          function nextBusinessDay(time) {
+            var d = new Date();
+            d.setUTCFullYear(time.year);
+            d.setUTCMonth(time.month - 1);
+            d.setUTCDate(time.day + 1);
+            d.setUTCHours(0, 0, 0, 0);
+            return {
+              year: d.getUTCFullYear(),
+              month: d.getUTCMonth() + 1,
+              day: d.getUTCDate(),
+            };
+          }
+
+          // setInterval(function () {
+          //   var deltaY = targetPrice - lastClose;
+          //   var deltaX = targetIndex - lastIndex;
+          //   var angle = deltaY / deltaX;
+          //   var basePrice = lastClose + (currentIndex - lastIndex) * angle;
+          //   var noise = (0.1 - Math.random() * 0.2) + 1.0;
+          //   var noisedPrice = basePrice * noise;
+          //   mergeTickToBar(noisedPrice);
+          //   //봉바뀜
+          //   if (++ticksInCurrentBar === 5) {
+          //     // move to next bar
+          //     currentIndex++;
+          //     //currentBusinessDay = nextBusinessDay(currentBusinessDay);
+          //     console.log(nowtime);
+          //     currentBar = {
+          //       open: null,
+          //       high: null,
+          //       low: null,
+          //       close: null,
+          //       time: nowtime += 60
+          //     };
+          //     ticksInCurrentBar = 0;
+          //     if (currentIndex === 5000) {
+          //       reset();
+          //       return;
+          //     }
+          //     if (currentIndex === targetIndex) {
+          //       // change trend
+          //       lastClose = noisedPrice;
+          //       lastIndex = currentIndex;
+          //       targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
+          //       targetPrice = getRandomPrice();
+          //     }
+          //   }
+          // }, 20000);
+        </script>
+      </div>
+      <!--lightweight-charts end-->
       <div id="chatArea" style="margin: 0 auto;">
         <div style="margin: 0 auto;" id="chatMessageArea"></div>
       </div>
@@ -219,14 +399,22 @@ www.ggwp.kr@gmail.com
   <script type="text/javascript">
     const code_arr = ["101QC", "106QC", "251340", "229200"];
     const codeId_arr = ["F101", "F106", "A251340", "A229200"];
+    var min_229200 = Number(0);
     var soundState = false;
     var audiof;
     var wsocket;
+    var currentBar = {
+      open: null,
+      high: null,
+      low: null,
+      close: null,
+      time: null
+    };
     connect();
 
     function connect() {
       wsocket = new WebSocket(
-        "wss://chat.ggwp.kr/chat/chat-ws");
+        "wss://ws.232.kr/ws/liveprice");
       wsocket.onopen = onOpen;
       wsocket.onmessage = onMessage;
       wsocket.onclose = onClose;
@@ -257,16 +445,39 @@ www.ggwp.kr@gmail.com
       if (data == "1") { return; }
 
       if (data.indexOf("^") > 0) {
-        console.log();
         const scdata = data.split("^");
-        var code = scdata[0];
-        var price = scdata[1];
-        var cpprice = scdata[2];
+        var code = scdata[0]
+        var unixtime = scdata[1];
+        var price = scdata[2];
+        var cpprice = scdata[3];
 
         const foundCode = code_arr.findIndex(cd => cd == code)
         console.log(foundCode);
         const targetEl = document.getElementById(codeId_arr[foundCode]);
         console.log(targetEl);
+
+        if (code == "229200") {
+          console.log(unixtime);
+          if (min_229200 != unixtime) {
+            console.log(unixtime);
+            min_229200 = Number(unixtime);
+            currentBar = {
+              open: null,
+              high: null,
+              low: null,
+              close: null,
+              time: min_229200
+            };
+          }
+          else//min_229200 == unixtime
+          {
+            // lastClose = noisedPrice;
+            // lastIndex = currentIndex;
+            // targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
+            // targetPrice = cpprice;
+          }
+          mergeTickToBar(cpprice);
+        }
         targetEl.classList.toggle("bg-black");
         if (Number(cpprice) > 0) {
           price = "+" + price;
@@ -316,12 +527,11 @@ www.ggwp.kr@gmail.com
       $("#chatArea").scrollTop(maxScroll);
     }
 
-    function  soundAlertBtn(){
+    function soundAlertBtn() {
       // <button id="soundAlert" onclick="soundAlertBtn()">
       //   <i class="far fa-bell"></i>알람 켜기</button>
-      if(soundState)
-      {soundState = false}
-      else{soundState = true}
+      if (soundState) { soundState = false }
+      else { soundState = true }
       const targetEl = document.getElementById("toggleAlert");
       targetEl.classList.toggle("fa-bell");
       targetEl.classList.toggle("fa-bell-slash");
@@ -329,22 +539,21 @@ www.ggwp.kr@gmail.com
     }
 
     function playAlertSound(data) {
-      if (soundState) 
-      {
+      if (soundState) {
         var url = "https://232.kr/sound/";
-        var audiof  = new Audio(url+"Beep_Short.mp3");;
+        var audiof = new Audio(url + "Beep_Short.mp3");;
         audiof.play();
         if (data.indexOf("매수주문확인") > 0) {
-          audiof = new Audio(url+"s211.mp3");
+          audiof = new Audio(url + "s211.mp3");
         }
         else if (data.indexOf("매수체결확인") > 0) {
-          audiof = new Audio(url+"s213.mp3");
+          audiof = new Audio(url + "s213.mp3");
         }
         else if (data.indexOf("매도주문확인") > 0) {
-          audiof = new Audio(url+"/111.mp3");
+          audiof = new Audio(url + "/111.mp3");
         }
         else if (data.indexOf("매도체결확인") > 0) {
-          audiof = new Audio(url+"s113.mp3");
+          audiof = new Audio(url + "s113.mp3");
         }
         audiof.play();
       }
