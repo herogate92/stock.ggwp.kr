@@ -199,28 +199,39 @@ www.ggwp.kr@gmail.com
           var chart = LightweightCharts.createChart(document.getElementById("lightweight-charts-area"), {
             width: 600,
             height: 300,
+            localization: {
+              locale: 'ko-KR',
+              //priceFormatter: price => +  price + '₩',
+              precision: 0,
+            },
             crosshair: {
               mode: LightweightCharts.CrosshairMode.Normal,
             },
-            priceFormat: {
-              type: 'custom',
-              minMove: 0.02,
-              formatter: function (price) {
-                return '$' + price.toFixed(2);
-              }
-            },
+            // priceFormat: {
+            //   type: 'price',
+            //   //precision : -2,
+            //   //minMove : 5,
+            //   //formatter : price  =>  '₩'  +  price
+            //   minMove: 5,
+            // },
             layout: {
               backgroundColor: "#131722",
               textColor: "#d1d4dc"
             },
             grid: {
               vertLines: {
-                color: "rgba(42, 46, 57, 0)"
+                color: "rgba(42, 46, 57, 0)",
+                style: 1,
+                visible: true,
               },
               horzLines: {
-                color: "rgba(42, 46, 57, 0.6)"
+                color: "rgba(42, 46, 57, 0.6)",
+                style: 1,
+                visible: true,
               }
-            }
+            },
+            
+
           });
           chart.applyOptions({
             timeScale: {
@@ -241,7 +252,24 @@ www.ggwp.kr@gmail.com
                 return String(mins);
               },
             },
+            priceScale: {
+              position: 'right',
+              precision: 0,
+              mode: LightweightCharts.PriceScaleMode.Normal,
+              autoScale: true,
+              invertScale: true,
+              alignLabels: false,
+              scaleMargins: {
+                top: 0.30,
+                bottom: 0.30,
+              },
+            },
           });
+          // chart.timeScale().setVisibleLogicalRange({
+          //   from: 5,
+          //   to: 10,
+          // });
+          // chart.timeScale().scrollToPosition(5, true);
           chart.timeScale().scrollToRealTime();
           // ORANGE RED #FF4500  // RoyalBlue #4169E1
           var candleSeries = chart.addCandlestickSeries({
@@ -263,29 +291,29 @@ www.ggwp.kr@gmail.com
             wichUpColor: '#FF4500',
           });
           var nowtime = Math.trunc(new Date().setSeconds(0) / 1000);
-          console.log(new Date().setSeconds(0));
-          console.log(new Date());
+          // console.log(new Date().setSeconds(0));
+          // console.log(new Date());
           var data = [
-            { time: nowtime, open: 0, high: 0, low: 0, close: 0 },
+            //{ time: 0, open: 0, high: 0, low: 0, close: 0 },
           ];
 
           candleSeries.setData(data);
 
-          var lastClose = data[data.length - 1].close;
-          var lastIndex = data.length - 1;
+          // var lastClose = data[data.length - 1].close;
+          // var lastIndex = data.length - 1;
 
-          var targetIndex = lastIndex + 105 + Math.round(Math.random() + 30);
-          var targetPrice = getRandomPrice();
+          // var targetIndex = lastIndex + 105 + Math.round(Math.random() + 30);
+          // var targetPrice = getRandomPrice();
 
-          var currentIndex = lastIndex + 1;
-          var currentBusinessDay = Math.trunc(new Date().setSeconds(0) / 1000);
+          // var currentIndex = lastIndex + 1;
+          // var currentBusinessDay = Math.trunc(new Date().setSeconds(0) / 1000);
           var ticksInCurrentBar = 0;
           var currentBar = {
             open: null,
             high: null,
             low: null,
             close: null,
-            time: Math.trunc(new Date().setSeconds(0) / 1000),
+            time: 0,
           };
 
           function mergeTickToBar(price) {
@@ -399,7 +427,7 @@ www.ggwp.kr@gmail.com
   <script type="text/javascript">
     const code_arr = ["101QC", "106QC", "251340", "229200"];
     const codeId_arr = ["F101", "F106", "A251340", "A229200"];
-    var min_229200 = Number(0);
+    var min_233740 = Number(0);
     var soundState = false;
     var audiof;
     var wsocket;
@@ -441,7 +469,7 @@ www.ggwp.kr@gmail.com
     }
     function onMessage(evt) {
       var data = evt.data;
-      console.log(evt);
+      //console.log(evt);
       if (data == "1") { return; }
 
       if (data.indexOf("^") > 0) {
@@ -452,31 +480,28 @@ www.ggwp.kr@gmail.com
         var cpprice = scdata[3];
 
         const foundCode = code_arr.findIndex(cd => cd == code)
-        console.log(foundCode);
+        //console.log(foundCode);
         const targetEl = document.getElementById(codeId_arr[foundCode]);
-        console.log(targetEl);
+        //console.log(targetEl);
 
-        if (code == "229200") {
-          console.log(unixtime);
-          if (min_229200 != unixtime) {
-            console.log(unixtime);
-            min_229200 = Number(unixtime);
+        if (code == "233740") {
+          //console.log(unixtime);
+          if (min_233740 != unixtime) {
+            //console.log(unixtime);
+            min_233740 = Number(unixtime);
             currentBar = {
               open: null,
               high: null,
               low: null,
               close: null,
-              time: min_229200
+              time: min_233740
             };
           }
-          else//min_229200 == unixtime
+          else//min_233740 == unixtime
           {
-            // lastClose = noisedPrice;
-            // lastIndex = currentIndex;
-            // targetIndex = lastIndex + 5 + Math.round(Math.random() + 30);
-            // targetPrice = cpprice;
           }
-          mergeTickToBar(cpprice);
+          mergeTickToBar(price);
+          return;
         }
         targetEl.classList.toggle("bg-black");
         if (Number(cpprice) > 0) {
