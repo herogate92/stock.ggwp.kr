@@ -6,8 +6,8 @@
  /$$____/   |___  $$ /$$____/     | $$$$$$/ | $$  \__/
 | $$       /$$  \ $$| $$          | $$_  $$ | $$      
 | $$$$$$$$|  $$$$$$/| $$$$$$$$ /$$| $$ \  $$| $$      
-|________/ \______/ |________/|__/|__/  \__/|__/                                                                                                                     \|__|\|__|                                                                                                                                       
-www.ggwp.kr@gmail.com                                                                                                          
+|________/ \______/ |________/|__/|__/  \__/|__/      
+herogate92@gmail.com                                  
 !-->
 <!DOCTYPE html>
 <html lang="kr">
@@ -16,14 +16,12 @@ www.ggwp.kr@gmail.com
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="232kr stock ">
-  <meta name="author" content="www.ggwp.kr@gmail.com">
-  <meta name="keyword" content="ggwp">
+  <meta name="author" content="herogate92@gmail.com">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.232.kr">
   <meta property="og:title" id="ogtitle" content="232kr stock ">
   <meta property="og:description" id="ogdesc" content="232kr stock ">
-  <!-- <meta property="og:image" id="ogimg" content="https://www.ggwp.kr/img/logo.png"> -->
   <title>232kr stock </title>
   <!-- Bootstrap core CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
@@ -191,12 +189,14 @@ www.ggwp.kr@gmail.com
         </tr>
         </tbody>
       </table>
-      <div id="lightweight-charts-area">
+      <div id="lightweight-charts-area" style="position: relative;">
         <!-- lightweight-charts start -->
         <script type="text/javascript"
           src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
         <script>
-          var chart = LightweightCharts.createChart(document.getElementById("lightweight-charts-area"), {
+          var container = document.createElement('div');
+          document.getElementById("lightweight-charts-area").appendChild(container);
+          var chart = window.tvchart = LightweightCharts.createChart(container, {
             width: 600,
             height: 300,
             localization: {
@@ -230,9 +230,44 @@ www.ggwp.kr@gmail.com
                 visible: true,
               }
             },
-            
-
           });
+
+          /* var chart = LightweightCharts.createChart(document.getElementById("lightweight-charts-area"), {
+            width: 600,
+            height: 300,
+            localization: {
+              locale: 'ko-KR',
+              //priceFormatter: price => +  price + '₩',
+              precision: 0,
+            },
+            crosshair: {
+              mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            // priceFormat: {
+            //   type: 'price',
+            //   //precision : -2,
+            //   //minMove : 5,
+            //   //formatter : price  =>  '₩'  +  price
+            //   minMove: 5,
+            // },
+            layout: {
+              backgroundColor: "#131722",
+              textColor: "#d1d4dc"
+            },
+            grid: {
+              vertLines: {
+                color: "rgba(42, 46, 57, 0)",
+                style: 1,
+                visible: true,
+              },
+              horzLines: {
+                color: "rgba(42, 46, 57, 0.6)",
+                style: 1,
+                visible: true,
+              }
+            },
+          }); */
+
           chart.applyOptions({
             timeScale: {
               rightOffset: 6,
@@ -253,6 +288,7 @@ www.ggwp.kr@gmail.com
               },
             },
             priceScale: {
+              title: "test",
               position: 'right',
               precision: 0,
               mode: LightweightCharts.PriceScaleMode.Normal,
@@ -299,14 +335,6 @@ www.ggwp.kr@gmail.com
 
           candleSeries.setData(data);
 
-          // var lastClose = data[data.length - 1].close;
-          // var lastIndex = data.length - 1;
-
-          // var targetIndex = lastIndex + 105 + Math.round(Math.random() + 30);
-          // var targetPrice = getRandomPrice();
-
-          // var currentIndex = lastIndex + 1;
-          // var currentBusinessDay = Math.trunc(new Date().setSeconds(0) / 1000);
           var ticksInCurrentBar = 0;
           var currentBar = {
             open: null,
@@ -427,10 +455,15 @@ www.ggwp.kr@gmail.com
   <script type="text/javascript">
     const code_arr = ["101QC", "106QC", "251340", "229200"];
     const codeId_arr = ["F101", "F106", "A251340", "A229200"];
+    const orderType_arr = ["매수주문확인", "매수체결확인", "매도주문확인", "매도체결확인"];
+    const sound_arr = ["s211.mp3", "s213.mp3", "s111.mp3", "s113.mp3"]
+    var soundUrl = "https://232.kr/sound/";
+
     var min_233740 = Number(0);
     var soundState = false;
     var audiof;
     var wsocket;
+
     var currentBar = {
       open: null,
       high: null,
@@ -438,6 +471,22 @@ www.ggwp.kr@gmail.com
       close: null,
       time: null
     };
+    var markers = [];
+
+    var toolTipMargin = 10;
+    var priceScaleWidth = 50;
+    var toolTip = document.createElement('div');
+    toolTip.className = 'three-line-legend';
+    container.appendChild(toolTip);
+    toolTip.style.display = 'block';
+    toolTip.style.left = 3 + 'px';
+    toolTip.style.top = 3 + 'px';
+
+    function setLastBarText(title) {
+      toolTip.innerHTML = '<div style="font-size: 12px; margin: 4px 0px; color: #20262E">' + title + '</div>';
+    }
+    setLastBarText('KODEX 코스닥150 레버리지');
+
     connect();
 
     function connect() {
@@ -450,10 +499,9 @@ www.ggwp.kr@gmail.com
     function disconnect() {
       wsocket.close();
     }
+
     function onOpen(evt) {
-      console.log("connection");
-      // $('#enterBtn').prop("disabled", true);
-      // $('#sendBtn').prop("disabled", false);
+      //console.log("connection");
       var adnum = Math.floor(Math.random() * 3);
       if (adnum == 0) {
         appendMessage("[광고] <a href='https://ward.ggwp.kr'> 단축URL 와드하러 바로가기</a>");
@@ -464,25 +512,22 @@ www.ggwp.kr@gmail.com
       else if (adnum == 2) {
         appendMessage("[광고] <a href='https://kbs92.github.io'> 랜덤채팅 바로가기</a>");
       }
-
       appendMessage("중계서버와 연결되었습니다.");
     }
+
     function onMessage(evt) {
       var data = evt.data;
-      //console.log(evt);
-      if (data == "1") { return; }
-
-      if (data.indexOf("^") > 0) {
+      if (data.indexOf("$~") == 0) //live price
+      {
         const scdata = data.split("^");
-        var code = scdata[0]
-        var unixtime = scdata[1];
-        var price = scdata[2];
-        var cpprice = scdata[3];
+        var code = scdata[1]
+        var unixtime = scdata[2];
+        var price = scdata[3];
+        var cpprice = scdata[4];
+        var nowUnixTime = unixtime;
 
-        const foundCode = code_arr.findIndex(cd => cd == code)
-        //console.log(foundCode);
+        const foundCode = code_arr.findIndex(cd => cd == code);
         const targetEl = document.getElementById(codeId_arr[foundCode]);
-        //console.log(targetEl);
 
         if (code == "233740") {
           //console.log(unixtime);
@@ -517,32 +562,23 @@ www.ggwp.kr@gmail.com
         }
         targetEl.innerHTML = price;
         targetEl.classList.toggle("bg-light");
-
-        //appendMessage(data);
       }
-      else if (data.indexOf("주문알림")) {
-        playAlertSound(data);
-        appendMessage(data);
+
+      else if (data.indexOf("$!") == 0) {
+        const data_arr = data.split("^");
+        var msg = data_arr[1];
+        appendMessage("[주문알림]" + msg);
+        orderAlertProcess(msg);
+        //playAlertSound(data);
       }
       else {
+        console.log(data);
         appendMessage(data);
       }
-      //document.getElementById('testqq');
-      //codeId_arr[foundCode];
-
-      // 		}
     }
     function onClose(evt) {
       console.log("disconnection");
       appendMessage("연결이 끊어졌습니다.");
-      // $('#enterBtn').prop("disabled", false);
-      // $('#sendBtn').prop("disabled", true);
-    }
-
-    function send() {
-      // var msg = $("#message").val();
-      // wsocket.send("["+nickname + "] " + msg);
-      // $("#message").val("");
     }
 
     function appendMessage(msg) {
@@ -553,32 +589,73 @@ www.ggwp.kr@gmail.com
     }
 
     function soundAlertBtn() {
-      // <button id="soundAlert" onclick="soundAlertBtn()">
-      //   <i class="far fa-bell"></i>알람 켜기</button>
       if (soundState) { soundState = false }
       else { soundState = true }
       const targetEl = document.getElementById("toggleAlert");
       targetEl.classList.toggle("fa-bell");
       targetEl.classList.toggle("fa-bell-slash");
-      console.log(soundState);
+      //console.log(soundState);
+    }
+
+    function orderAlertProcess(data) {
+      if (data.indexOf("매수주문확인") >= 0) {
+        playSound('211');
+      }
+      else if (data.indexOf("매수체결확인") >= 0) {
+        // markers.push({ time: new Date(min_233740 * 1000), position: 'belowBar', color: '#2196F3', shape: 'arrowUp', text: 'Buy' });
+        // candleSeries.setMarkers(markers);
+        playSound('213');
+      }
+      else if (data.indexOf("매도주문확인") >= 0) {
+        playSound('111');
+      }
+      else if (data.indexOf("매도체결확인") >= 0) {
+        // markers.push({ time: new Date(min_233740 * 1000), position: 'aboveBar', color: '#e91e63', shape: 'arrowDown', text: 'Sell' });
+        // candleSeries.setMarkers(markers);
+        playSound('113');
+      }
+    }
+
+    function playSound(type) {
+      if (soundState) {
+        var audiof = new Audio(soundUrl + "Beep_Short.mp3");
+        audiof.play();
+
+        switch (type) {
+          case 'beep':
+            break;
+          case '211':
+            audiof = new Audio(soundUrl + "s211.mp3");
+            break;
+          case '213':
+            audiof = new Audio(soundUrl + "s213.mp3");
+            break;
+          case '111':
+            audiof = new Audio(soundUrl + "s111.mp3");
+            break;
+          case '113':
+            audiof = new Audio(soundUrl + "s113.mp3");
+            break;
+        }
+        audiof.play();
+      }
     }
 
     function playAlertSound(data) {
       if (soundState) {
-        var url = "https://232.kr/sound/";
-        var audiof = new Audio(url + "Beep_Short.mp3");;
+        var audiof = new Audio(soundUrl + "Beep_Short.mp3");;
         audiof.play();
-        if (data.indexOf("매수주문확인") > 0) {
-          audiof = new Audio(url + "s211.mp3");
+        if (data.indexOf("매수주문확인") >= 0) {
+          audiof = new Audio(soundUrl + "s211.mp3");
         }
-        else if (data.indexOf("매수체결확인") > 0) {
-          audiof = new Audio(url + "s213.mp3");
+        else if (data.indexOf("매수체결확인") >= 0) {
+          audiof = new Audio(soundUrl + "s213.mp3");
         }
-        else if (data.indexOf("매도주문확인") > 0) {
-          audiof = new Audio(url + "/111.mp3");
+        else if (data.indexOf("매도주문확인") >= 0) {
+          audiof = new Audio(soundUrl + "111.mp3");
         }
-        else if (data.indexOf("매도체결확인") > 0) {
-          audiof = new Audio(url + "s113.mp3");
+        else if (data.indexOf("매도체결확인") >= 0) {
+          audiof = new Audio(soundUrl + "s113.mp3");
         }
         audiof.play();
       }
@@ -590,12 +667,8 @@ www.ggwp.kr@gmail.com
     }
 
     $(document).ready(function () {
-      //$('#sendBtn').click(function() { send(); });
-      //$('#enterBtn').click(function() { connect(); });
-      //$('#exitBtn').click(function() { disconnect(); });
       setInterval(function () { alivesignal(); }, 20000);
     });
-
   </script>
   <style>
     #chatArea {
@@ -604,7 +677,19 @@ www.ggwp.kr@gmail.com
       overflow-y: auto;
       border: 1px solid black;
     }
+
+    .three-line-legend {
+      width: 96px;
+      height: 60px;
+      position: absolute;
+      padding: 8px;
+      font-size: 12px;
+      color: '#20262E';
+      background-color: rgba(255, 255, 255, 0.23);
+      text-align: left;
+      z-index: 1000;
+      pointer-events: none;
+    }
   </style>
 </body>
-
 </html>
